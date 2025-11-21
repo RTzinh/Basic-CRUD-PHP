@@ -75,3 +75,32 @@ th {
   color: #2f7a41;
   border: 1px solid #b8e6c7;
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+
+.card {
+  padding: 12px 14px;
+  border: 1px solid #e0e7ef;
+  background: #f8fbff;
+  border-radius: 6px;
+}
+
+.card-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #0f4fa3;
+}
+
+.card-label {
+  color: #5a6575;
+}
+
+.muted {
+  color: #7a7e86;
+  margin: 8px 0;
+}

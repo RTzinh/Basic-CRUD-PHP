@@ -21,6 +21,6 @@ try {
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo 'Erro ao conectar ao banco de dados: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+    echo 'Failed to connect to the database: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
     exit;
 }

@@ -88,12 +88,12 @@ switch ($page) {
     case 'register':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (register($pdo, $_POST['name'] ?? '', $_POST['email'] ?? '', $_POST['password'] ?? '')) {
-                $success = 'Usuario cadastrado. Faca login.';
+                $success = 'User registered. Please log in.';
             } else {
-                $error = 'E-mail ja cadastrado.';
+                $error = 'E-mail already registered.';
             }
         }
-        renderHeader('Registrar');
+        renderHeader('Register');
         renderAuthForm('register', $error, $success);
         renderFooter();
         exit;
@@ -104,7 +104,7 @@ switch ($page) {
                 header('Location: ?page=dashboard');
                 exit;
             }
-            $error = 'Credenciais invalidas.';
+            $error = 'Invalid credentials.';
         }
         renderHeader('Login');
         renderAuthForm('login', $error, $success);
@@ -133,7 +133,7 @@ switch ($page) {
 
     default:
         http_response_code(404);
-        echo 'Pagina nao encontrada';
+        echo 'Page not found';
         exit;
 }
 
@@ -142,9 +142,9 @@ switch ($page) {
  */
 function renderHeader(string $title): void
 {
-    echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' . e($title) . ' - Agenda de Servicos</title>';
+    echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' . e($title) . ' - Service Scheduler</title>';
     echo '<link rel="stylesheet" href="styles.css"></head><body><div class="container">';
-    echo '<h1>Agenda de Servicos</h1>';
+    echo '<h1>Service Scheduler</h1>';
 }
 
 function renderFooter(): void
@@ -154,7 +154,7 @@ function renderFooter(): void
 
 function renderNav(): void
 {
-    echo '<nav><a href="?page=dashboard">Dashboard</a> | <a href="?page=clients">Clientes</a> | <a href="?page=services">Servicos</a> | <a href="?page=appointments">Agendamentos</a> | <a href="?page=logout">Sair</a></nav>';
+    echo '<nav><a href="?page=dashboard">Dashboard</a> | <a href="?page=clients">Clients</a> | <a href="?page=services">Services</a> | <a href="?page=appointments">Appointments</a> | <a href="?page=logout">Log out</a></nav>';
 }
 
 function renderDashboard(PDO $pdo): void
@@ -165,19 +165,19 @@ function renderDashboard(PDO $pdo): void
     renderHeader('Dashboard');
     renderNav();
 
-    echo '<h2>Visao Geral</h2>';
+    echo '<h2>Overview</h2>';
     echo '<div class="dashboard-grid">';
-    echo renderStatCard('Clientes', (string)$stats['clients']);
-    echo renderStatCard('Servicos', (string)$stats['services']);
-    echo renderStatCard('Agend. pendentes', (string)$stats['pending']);
-    echo renderStatCard('Hoje', (string)$stats['today']);
+    echo renderStatCard('Clients', (string)$stats['clients']);
+    echo renderStatCard('Services', (string)$stats['services']);
+    echo renderStatCard('Pending appts.', (string)$stats['pending']);
+    echo renderStatCard('Today', (string)$stats['today']);
     echo '</div>';
 
-    echo '<h3>Proximos agendamentos</h3>';
+    echo '<h3>Upcoming appointments</h3>';
     if (!$upcoming) {
-        echo '<p class="muted">Nenhum agendamento futuro.</p>';
+        echo '<p class="muted">No upcoming appointments.</p>';
     } else {
-        echo '<table><tr><th>Quando</th><th>Cliente</th><th>Servico</th><th>Status</th></tr>';
+        echo '<table><tr><th>When</th><th>Client</th><th>Service</th><th>Status</th></tr>';
         foreach ($upcoming as $item) {
             echo '<tr>';
             echo '<td>' . e($item['scheduled_to']) . '</td>';
@@ -230,15 +230,15 @@ function renderAuthForm(string $type, ?string $error, ?string $success): void
 
     if ($type === 'login') {
         echo '<form method="POST"><label>E-mail</label><input name="email" type="email" required>';
-        echo '<label>Senha</label><input name="password" type="password" required>';
-        echo '<button type="submit">Entrar</button></form>';
-        echo '<p><a href="?page=register">Criar conta</a></p>';
+        echo '<label>Password</label><input name="password" type="password" required>';
+        echo '<button type="submit">Sign in</button></form>';
+        echo '<p><a href="?page=register">Create account</a></p>';
     } else {
-        echo '<form method="POST"><label>Nome</label><input name="name" required>';
+        echo '<form method="POST"><label>Name</label><input name="name" required>';
         echo '<label>E-mail</label><input name="email" type="email" required>';
-        echo '<label>Senha</label><input name="password" type="password" required>';
-        echo '<button type="submit">Registrar</button></form>';
-        echo '<p><a href="?page=login">Ja tenho conta</a></p>';
+        echo '<label>Password</label><input name="password" type="password" required>';
+        echo '<button type="submit">Register</button></form>';
+        echo '<p><a href="?page=login">I already have an account</a></p>';
     }
 }
 
@@ -252,7 +252,7 @@ function handleClients(PDO $pdo): void
         if (isset($_POST['delete_id'])) {
             $stmt = $pdo->prepare('DELETE FROM clients WHERE id = :id');
             $stmt->execute(['id' => (int)$_POST['delete_id']]);
-            $success = 'Cliente removido.';
+            $success = 'Client removed.';
         } else {
             $stmt = $pdo->prepare('INSERT INTO clients (name, email, phone, notes, created_at) VALUES (:name, :email, :phone, :notes, NOW())');
             $stmt->execute([
@@ -261,13 +261,13 @@ function handleClients(PDO $pdo): void
                 'phone' => $_POST['phone'] ?? '',
                 'notes' => $_POST['notes'] ?? '',
             ]);
-            $success = 'Cliente cadastrado.';
+            $success = 'Client saved.';
         }
     }
 
     $clients = $pdo->query('SELECT * FROM clients ORDER BY created_at DESC')->fetchAll();
 
-    renderHeader('Clientes');
+    renderHeader('Clients');
     renderNav();
     if ($error) {
         echo '<div class="alert error">' . e($error) . '</div>';
@@ -276,17 +276,17 @@ function handleClients(PDO $pdo): void
         echo '<div class="alert success">' . e($success) . '</div>';
     }
 
-    echo '<h2>Novo Cliente</h2>';
-    echo '<form method="POST"><label>Nome</label><input name="name" required>';
+    echo '<h2>New Client</h2>';
+    echo '<form method="POST"><label>Name</label><input name="name" required>';
     echo '<label>E-mail</label><input name="email" type="email">';
-    echo '<label>Telefone</label><input name="phone">';
-    echo '<label>Observacoes</label><textarea name="notes"></textarea>';
-    echo '<button type="submit">Salvar</button></form>';
+    echo '<label>Phone</label><input name="phone">';
+    echo '<label>Notes</label><textarea name="notes"></textarea>';
+    echo '<button type="submit">Save</button></form>';
 
-    echo '<h2>Clientes cadastrados</h2><table><tr><th>Nome</th><th>Contato</th><th>Acoes</th></tr>';
+    echo '<h2>Registered Clients</h2><table><tr><th>Name</th><th>Contact</th><th>Actions</th></tr>';
     foreach ($clients as $client) {
         echo '<tr><td>' . e($client['name']) . '</td><td>' . e($client['email'] . ' / ' . $client['phone']) . '</td><td>';
-        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$client['id'] . '"><button type="submit" onclick="return confirm(\'Excluir?\')">Excluir</button></form>';
+        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$client['id'] . '"><button type="submit" onclick="return confirm(\'Delete?\')">Delete</button></form>';
         echo '</td></tr>';
     }
     echo '</table>';
@@ -303,7 +303,7 @@ function handleServices(PDO $pdo): void
         if (isset($_POST['delete_id'])) {
             $stmt = $pdo->prepare('DELETE FROM services WHERE id = :id');
             $stmt->execute(['id' => (int)$_POST['delete_id']]);
-            $success = 'Servico removido.';
+            $success = 'Service removed.';
         } else {
             $stmt = $pdo->prepare('INSERT INTO services (name, description, price, duration_minutes, created_at) VALUES (:name, :description, :price, :duration_minutes, NOW())');
             $stmt->execute([
@@ -312,13 +312,13 @@ function handleServices(PDO $pdo): void
                 'price' => (float)($_POST['price'] ?? 0),
                 'duration_minutes' => (int)($_POST['duration_minutes'] ?? 30),
             ]);
-            $success = 'Servico cadastrado.';
+            $success = 'Service saved.';
         }
     }
 
     $services = $pdo->query('SELECT * FROM services ORDER BY created_at DESC')->fetchAll();
 
-    renderHeader('Servicos');
+    renderHeader('Services');
     renderNav();
     if ($error) {
         echo '<div class="alert error">' . e($error) . '</div>';
@@ -327,17 +327,17 @@ function handleServices(PDO $pdo): void
         echo '<div class="alert success">' . e($success) . '</div>';
     }
 
-    echo '<h2>Novo Servico</h2>';
-    echo '<form method="POST"><label>Nome</label><input name="name" required>';
-    echo '<label>Descricao</label><textarea name="description"></textarea>';
-    echo '<label>Preco</label><input name="price" type="number" step="0.01" min="0">';
-    echo '<label>Duracao (minutos)</label><input name="duration_minutes" type="number" min="10" step="5" value="30">';
-    echo '<button type="submit">Salvar</button></form>';
+    echo '<h2>New Service</h2>';
+    echo '<form method="POST"><label>Name</label><input name="name" required>';
+    echo '<label>Description</label><textarea name="description"></textarea>';
+    echo '<label>Price</label><input name="price" type="number" step="0.01" min="0">';
+    echo '<label>Duration (minutes)</label><input name="duration_minutes" type="number" min="10" step="5" value="30">';
+    echo '<button type="submit">Save</button></form>';
 
-    echo '<h2>Servicos cadastrados</h2><table><tr><th>Nome</th><th>Preco</th><th>Duracao</th><th>Acoes</th></tr>';
+    echo '<h2>Registered Services</h2><table><tr><th>Name</th><th>Price</th><th>Duration</th><th>Actions</th></tr>';
     foreach ($services as $service) {
         echo '<tr><td>' . e($service['name']) . '</td><td>R$ ' . e(number_format((float)$service['price'], 2, ',', '.')) . '</td><td>' . e((string)$service['duration_minutes']) . ' min</td><td>';
-        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$service['id'] . '"><button type="submit" onclick="return confirm(\'Excluir?\')">Excluir</button></form>';
+        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$service['id'] . '"><button type="submit" onclick="return confirm(\'Delete?\')">Delete</button></form>';
         echo '</td></tr>';
     }
     echo '</table>';
@@ -358,7 +358,7 @@ function handleAppointments(PDO $pdo): void
         if (isset($_POST['delete_id'])) {
             $stmt = $pdo->prepare('DELETE FROM appointments WHERE id = :id');
             $stmt->execute(['id' => (int)$_POST['delete_id']]);
-            $success = 'Agendamento removido.';
+            $success = 'Appointment removed.';
         } else {
             $stmt = $pdo->prepare('INSERT INTO appointments (client_id, service_id, user_id, scheduled_to, status, notes, created_at) VALUES (:client_id, :service_id, :user_id, :scheduled_to, :status, :notes, NOW())');
             $stmt->execute([
@@ -369,13 +369,13 @@ function handleAppointments(PDO $pdo): void
                 'status' => $_POST['status'] ?? 'pending',
                 'notes' => $_POST['notes'] ?? '',
             ]);
-            $success = 'Agendamento criado.';
+            $success = 'Appointment created.';
         }
     }
 
     $appointments = $pdo->query('SELECT a.id, c.name AS client, s.name AS service, a.scheduled_to, a.status FROM appointments a JOIN clients c ON c.id = a.client_id JOIN services s ON s.id = a.service_id ORDER BY a.scheduled_to DESC')->fetchAll();
 
-    renderHeader('Agendamentos');
+    renderHeader('Appointments');
     renderNav();
     if ($error) {
         echo '<div class="alert error">' . e($error) . '</div>';
@@ -384,26 +384,26 @@ function handleAppointments(PDO $pdo): void
         echo '<div class="alert success">' . e($success) . '</div>';
     }
 
-    echo '<h2>Novo Agendamento</h2>';
-    echo '<form method="POST"><label>Cliente</label><select name="client_id" required>';
+    echo '<h2>New Appointment</h2>';
+    echo '<form method="POST"><label>Client</label><select name="client_id" required>';
     foreach ($clients as $client) {
         echo '<option value="' . (int)$client['id'] . '">' . e($client['name']) . '</option>';
     }
     echo '</select>';
-    echo '<label>Servico</label><select name="service_id" required>';
+    echo '<label>Service</label><select name="service_id" required>';
     foreach ($services as $service) {
         echo '<option value="' . (int)$service['id'] . '">' . e($service['name']) . '</option>';
     }
     echo '</select>';
-    echo '<label>Data/Hora</label><input name="scheduled_to" type="datetime-local" required>';
-    echo '<label>Status</label><select name="status"><option value="pending">Pendente</option><option value="confirmed">Confirmado</option><option value="done">Concluido</option></select>';
-    echo '<label>Observacoes</label><textarea name="notes"></textarea>';
-    echo '<button type="submit">Agendar</button></form>';
+    echo '<label>Date/Time</label><input name="scheduled_to" type="datetime-local" required>';
+    echo '<label>Status</label><select name="status"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="done">Done</option></select>';
+    echo '<label>Notes</label><textarea name="notes"></textarea>';
+    echo '<button type="submit">Schedule</button></form>';
 
-    echo '<h2>Agendamentos</h2><table><tr><th>Cliente</th><th>Servico</th><th>Quando</th><th>Status</th><th>Acoes</th></tr>';
+    echo '<h2>Appointments</h2><table><tr><th>Client</th><th>Service</th><th>When</th><th>Status</th><th>Actions</th></tr>';
     foreach ($appointments as $appt) {
         echo '<tr><td>' . e($appt['client']) . '</td><td>' . e($appt['service']) . '</td><td>' . e($appt['scheduled_to']) . '</td><td>' . e($appt['status']) . '</td><td>';
-        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$appt['id'] . '"><button type="submit" onclick="return confirm(\'Excluir?\')">Excluir</button></form>';
+        echo '<form method="POST" style="display:inline"><input type="hidden" name="delete_id" value="' . (int)$appt['id'] . '"><button type="submit" onclick="return confirm(\'Delete?\')">Delete</button></form>';
         echo '</td></tr>';
     }
     echo '</table>';

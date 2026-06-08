@@ -1,0 +1,41 @@
+services:
+  db:
+    image: mysql:8
+    environment:
+      # Local DEV credentials only — do not use in production.
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: agenda_servicos
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uadmin", "-padmin"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    image: php:8.2-apache
+    command: >
+      bash -c "docker-php-ext-install pdo pdo_mysql >/dev/null 2>&1 &&
+               (echo 'DocumentRoot /var/www/html/public' > /etc/apache2/conf-available/docroot.conf &&
+                a2enconf docroot >/dev/null 2>&1) &&
+               sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf &&
+               apache2-foreground"
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: agenda_servicos
+      DB_USER: admin
+      DB_PASS: admin
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy

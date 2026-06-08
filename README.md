@@ -15,6 +15,12 @@ stylesheet — so it is easy to read end to end and use as a starting point.
 
 All queries use prepared statements (PDO), and output is escaped to mitigate XSS.
 
+## 🎬 Screenshots
+
+| Dashboard | Appointment form |
+| --------- | ---------------- |
+| ![Dashboard with seeded data](assets/list.png) | ![New appointment form and list](assets/form.png) |
+
 ## Tech stack
 
 - **PHP 8** (uses `declare(strict_types=1)`, typed functions, `password_hash`)
@@ -83,7 +89,35 @@ CREATE TABLE appointments (
 );
 ```
 
-## How to run
+## Run with Docker
+
+The quickest way to try the app. The provided `docker-compose.yml` starts a MySQL 8
+database (with the schema and a little English sample data loaded automatically) and
+a PHP 8.2 + Apache server, already wired together.
+
+```bash
+docker compose up
+```
+
+Then open <http://127.0.0.1:8081/> and sign in with the seeded account:
+
+- **E-mail:** `admin@example.com`
+- **Password:** `admin123`
+
+> The credentials in `docker-compose.yml` are throwaway values for local development only.
+
+- `schema.sql` and `seed.sql` are mounted into the MySQL container's
+  `/docker-entrypoint-initdb.d`, so the tables and sample rows are created on first start.
+- The web service maps host port **8081** → container port 80; MySQL maps host port
+  **3307** → container port 3306.
+
+To stop and remove everything (including the database volume):
+
+```bash
+docker compose down -v
+```
+
+## How to run (without Docker)
 
 1. **Configure the database connection.** `config/db.php` reads these environment
    variables (falling back to the defaults shown if unset):
